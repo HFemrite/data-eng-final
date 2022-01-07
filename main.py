@@ -32,10 +32,22 @@ def run():
         job_name='hunter-femrite-final-job'
     )
     with beam.Pipeline(options=o) as p:
-        views_data = p | "Read_Views" >> beam.io.ReadFromBigQuery(query='SELECT cust_tier_code, sku, count(event_tm) as total_no_of_product_views FROM york-cdf-start.final_input_data.product_views as p JOIN york-cdf-start.final_input_data.customers as c ON p.customer_id = c.customer_id GROUP BY cust_tier_code, sku', use_standard_sql=True)
-        views_data | "Write_Views" >> beam.io.WriteToBigQuery(table=total_views_new_table, schema=views_schema, create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
-        sales_data = p | "Read_Sales" >> beam.io.ReadFromBigQuery(query='SELECT cust_tier_code, sku, round(sum(order_amt), 2) as total_sales_amount FROM york-cdf-start.final_input_data.orders as o JOIN york-cdf-start.final_input_data.customers as c ON o.customer_id = c.customer_id GROUP BY cust_tier_code, sku', use_standard_sql=True)
-        sales_data | "Write_Sales" >> beam.io.WriteToBigQuery(table=total_sales_new_table, schema=sales_schema, create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
+        views_data = p | "Read_Views" >> beam.io.ReadFromBigQuery(
+            query='SELECT cust_tier_code, sku, count(event_tm) as total_no_of_product_views '
+                  'FROM york-cdf-start.final_input_data.product_views as p '
+                  'JOIN york-cdf-start.final_input_data.customers as c ON p.customer_id = c.customer_id '
+                  'GROUP BY cust_tier_code, sku', use_standard_sql=True)
+        views_data | "Write_Views" >> beam.io.WriteToBigQuery(
+            table=total_views_new_table, schema=views_schema,
+            create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
+        sales_data = p | "Read_Sales" >> beam.io.ReadFromBigQuery(
+            query='SELECT cust_tier_code, sku, round(sum(order_amt), 2) as total_sales_amount '
+                  'FROM york-cdf-start.final_input_data.orders as o '
+                  'JOIN york-cdf-start.final_input_data.customers as c ON o.customer_id = c.customer_id '
+                  'GROUP BY cust_tier_code, sku', use_standard_sql=True)
+        sales_data | "Write_Sales" >> beam.io.WriteToBigQuery(
+            table=total_sales_new_table, schema=sales_schema,
+            create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED)
 
 if __name__ == '__main__':
     run()
